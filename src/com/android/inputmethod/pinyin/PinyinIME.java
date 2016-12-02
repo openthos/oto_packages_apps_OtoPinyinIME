@@ -271,6 +271,10 @@ public class PinyinIME extends InputMethodService {
             return false;
         }
 
+        if (isSystemKeys(event)) {
+            return false;
+        }
+
         if (processFunctionKeys(keyCode, realAction)) {
             return true;
         }
@@ -313,6 +317,18 @@ public class PinyinIME extends InputMethodService {
             }
         }
 
+        return false;
+    }
+
+    private boolean isSystemKeys(KeyEvent event) {
+        if (event.isCtrlPressed()) {
+            return true;
+        } else if (event.isAltPressed()) {
+            int keyCode = event.getKeyCode();
+            if ((keyCode >= KeyEvent.KEYCODE_0) && (keyCode <= KeyEvent.KEYCODE_9)) {
+                return true;
+            }
+        }
         return false;
     }
 
