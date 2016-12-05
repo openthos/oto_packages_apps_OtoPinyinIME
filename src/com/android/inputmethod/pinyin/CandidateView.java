@@ -224,6 +224,8 @@ public class CandidateView extends View {
 
     private int mLocationTmp[] = new int[2];
 
+    private static final float CONTENT_HEIGHT_FACTOR = 0.60f;
+
     public CandidateView(Context context, AttributeSet attrs) {
         super(context, attrs);
 
@@ -362,7 +364,8 @@ public class CandidateView extends View {
 
     private void onSizeChanged() {
         mContentWidth = getMeasuredWidth() - mPaddingLeft - mPaddingRight;
-        mContentHeight = (int) ((getMeasuredHeight() - mPaddingTop - mPaddingBottom) * 0.95f);
+        mContentHeight = (int) ((getMeasuredHeight() - mPaddingTop - mPaddingBottom)
+                               * CONTENT_HEIGHT_FACTOR);
         /**
          * How to decide the font size if the height for display is given?
          * Now it is implemented in a stupid way.

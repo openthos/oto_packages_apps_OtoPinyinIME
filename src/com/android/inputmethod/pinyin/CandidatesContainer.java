@@ -164,6 +164,8 @@ public class CandidatesContainer extends RelativeLayout implements
      */
     private int mCurrentPage = -1;
 
+    private static final float MEASURE_HEIGHT_FACTOR = 0.40f;
+
     public CandidatesContainer(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
@@ -234,8 +236,8 @@ public class CandidatesContainer extends RelativeLayout implements
         measuredHeight += env.getHeightForCandidates();
         widthMeasureSpec = MeasureSpec.makeMeasureSpec(measuredWidth,
                 MeasureSpec.EXACTLY);
-        heightMeasureSpec = MeasureSpec.makeMeasureSpec(measuredHeight,
-                MeasureSpec.EXACTLY);
+        heightMeasureSpec = MeasureSpec.makeMeasureSpec(
+                (int) (measuredHeight * MEASURE_HEIGHT_FACTOR), MeasureSpec.EXACTLY);
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
         if (null != mLeftArrowBtn) {
