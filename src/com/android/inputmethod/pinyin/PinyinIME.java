@@ -165,6 +165,8 @@ public class PinyinIME extends InputMethodService {
      */
     private EnglishInputProcessor mImEn;
 
+    private boolean mHomeKeyPress;
+
     // receive ringer mode changes
     private BroadcastReceiver mReceiver = new BroadcastReceiver() {
         @Override
@@ -321,10 +323,14 @@ public class PinyinIME extends InputMethodService {
     }
 
     private boolean isSystemKeys(KeyEvent event) {
-        if (event.isCtrlPressed()) {
+        int keyCode = event.getKeyCode();
+
+        if (keyCode == KeyEvent.KEYCODE_HOME) {
+            mHomeKeyPress = event.getAction() == KeyEvent.ACTION_DOWN;
+            return true;
+        } else if (event.isCtrlPressed() || mHomeKeyPress) {
             return true;
         } else if (event.isAltPressed()) {
-            int keyCode = event.getKeyCode();
             if ((keyCode >= KeyEvent.KEYCODE_0) && (keyCode <= KeyEvent.KEYCODE_9)) {
                 return true;
             }
