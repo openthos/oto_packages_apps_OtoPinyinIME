@@ -331,7 +331,9 @@ public class PinyinIME extends InputMethodService {
         } else if (event.isCtrlPressed() || mHomeKeyPress) {
             return true;
         } else if (event.isAltPressed()) {
-            if ((keyCode >= KeyEvent.KEYCODE_0) && (keyCode <= KeyEvent.KEYCODE_9)) {
+            if (((keyCode >= KeyEvent.KEYCODE_0) && (keyCode <= KeyEvent.KEYCODE_9))
+                || ((keyCode >= KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE)
+                     && (keyCode <= KeyEvent.KEYCODE_HELP))) {
                 return true;
             }
         }
