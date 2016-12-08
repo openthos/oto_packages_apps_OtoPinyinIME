@@ -25,6 +25,20 @@ import android.view.KeyEvent;
 public class KeyMapDream {
     // Number of shift bits to store full-width symbols
     private static final int SHIFT_FWCH = 8;
+    private  static final String KEYCHAR_GRAVE = "～";
+    private static final String KEYCHAR_EXCLAMATION_POINT = "！";
+    private static final String KEYCHAR_AT = "＠";
+    private static final String KEYCHAR_POUND = "＃";
+    private static final String KEYCHAR_DOLLAR = "￥";
+    private static final String KEYCHAR_PERCENT = "％";
+    private static final String KEYCHAR_ARROR = "…";
+    private static final String KEYCHAR_AND = "＆";
+    private static final String KEYCHAR_MULTIPLY = "＊";
+    private static final String KEYCHAR_LEFT_PAREN = "（";
+    private static final String KEYCHAR_RIGHT_PAREN = "）";
+    private static final String KEYCHAR_UNDERLINE = "＿";
+    private static final String KEYCHAR_ADD = "＋";
+
     private static final int[] mKeyMap = {
             KeyEvent.KEYCODE_UNKNOWN,
             KeyEvent.KEYCODE_SOFT_LEFT,
@@ -102,5 +116,41 @@ public class KeyMapDream {
         if (keyCode <= 0 || keyCode >= KeyEvent.getMaxKeyCode()) return 0;
         assert ((mKeyMap[keyCode] & 0x000000ff) == keyCode);
         return (char) (mKeyMap[keyCode] >> SHIFT_FWCH);
+    }
+
+    static public String getSpecialChineseChar(int keyCode, int keyChar, KeyEvent event) {
+        if (event.isShiftPressed()) {
+            if (keyCode == KeyEvent.KEYCODE_0) {
+                return KEYCHAR_RIGHT_PAREN;
+            } else if (keyCode == KeyEvent.KEYCODE_1) {
+                return KEYCHAR_EXCLAMATION_POINT;
+            } else if (keyCode == KeyEvent.KEYCODE_2) {
+                return KEYCHAR_AT;
+            } else if (keyCode == KeyEvent.KEYCODE_3) {
+                return KEYCHAR_POUND;
+            } else if (keyCode == KeyEvent.KEYCODE_4) {
+                return KEYCHAR_DOLLAR;
+            } else if (keyCode == KeyEvent.KEYCODE_5) {
+                return KEYCHAR_PERCENT;
+            } else if (keyCode == KeyEvent.KEYCODE_6) {
+                return KEYCHAR_ARROR;
+            } else if (keyCode == KeyEvent.KEYCODE_7) {
+                return KEYCHAR_AND;
+            } else if (keyCode == KeyEvent.KEYCODE_8) {
+                return KEYCHAR_MULTIPLY;
+            } else if (keyCode == KeyEvent.KEYCODE_9) {
+                return KEYCHAR_LEFT_PAREN;
+            } else if (keyCode == KeyEvent.KEYCODE_GRAVE) {
+                return KEYCHAR_GRAVE;
+            } else if (keyCode == KeyEvent.KEYCODE_MINUS) {
+                return KEYCHAR_UNDERLINE;
+            } else if (keyCode == KeyEvent.KEYCODE_EQUALS) {
+                return KEYCHAR_ADD;
+            } else {
+                return String.valueOf((char) keyChar);
+            }
+        } else {
+            return String.valueOf((char) keyChar);
+        }
     }
 }

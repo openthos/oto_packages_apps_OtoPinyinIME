@@ -464,7 +464,7 @@ public class PinyinIME extends InputMethodService {
                     inputCommaPeriod("", keyChar, false, ImeState.STATE_IDLE);
                 } else {
                     if (0 != keyChar) {
-                        String result = String.valueOf((char) keyChar);
+                        String result = KeyMapDream.getSpecialChineseChar(keyCode, keyChar, event);
                         commitResultText(result);
                     }
                 }
