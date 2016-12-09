@@ -50,7 +50,7 @@
     <string name="setting_vibrate_title">按键震动</string>
     <string name="setting_prediction_title">联想输入</string>
     <string name="setting_switch_title">中英文切换</string>
-    <string name="setting_switch_shift_space_title">Shift-space</string>
+    <string name="setting_switch_shift_space_title">Shift</string>
 
     <string name="setting_enabled">开启</string>
     <string name="setting_disabled">关闭</string>

@@ -166,6 +166,7 @@ public class PinyinIME extends InputMethodService {
     private EnglishInputProcessor mImEn;
 
     private boolean mHomeKeyPress;
+    private boolean mShiftKeyPress;
 
     // receive ringer mode changes
     private BroadcastReceiver mReceiver = new BroadcastReceiver() {
@@ -251,9 +252,25 @@ public class PinyinIME extends InputMethodService {
         if (ImeState.STATE_BYPASS == mImeState) return false;
 
         int keyCode = event.getKeyCode();
+        boolean switchLanguage = false;
+
+        if (KeyEvent.KEYCODE_SHIFT_LEFT == keyCode || KeyEvent.KEYCODE_SHIFT_RIGHT == keyCode) {
+            if (event.getAction() == KeyEvent.ACTION_DOWN) {
+                if (event.getRepeatCount() == 0) {
+                    mShiftKeyPress = true;
+                }
+            } else {
+                if (mShiftKeyPress) {
+                    switchLanguage = true;
+                }
+            }
+        } else {
+            mShiftKeyPress = false;
+        }
+
         // SHIFT-SPACE is used to switch between Chinese and English
         // when HKB is on.
-        if (KeyEvent.KEYCODE_SPACE == keyCode && event.isShiftPressed()) {
+        if (switchLanguage) {
             if (!realAction) return true;
 
             updateIcon(mInputModeSwitcher.switchLanguageWithHkb());
