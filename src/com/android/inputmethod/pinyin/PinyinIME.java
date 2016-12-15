@@ -528,22 +528,20 @@ public class PinyinIME extends InputMethodService {
         } else if (keyCode == KeyEvent.KEYCODE_DPAD_UP
                 || keyCode == KeyEvent.KEYCODE_DPAD_DOWN
                 || keyCode == KeyEvent.KEYCODE_DPAD_LEFT
-                || keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
+                || keyCode == KeyEvent.KEYCODE_DPAD_RIGHT
+                || keyCode == KeyEvent.KEYCODE_EQUALS
+                || keyCode == KeyEvent.KEYCODE_MINUS) {
             if (!realAction) return true;
 
             if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
                 mCandidatesContainer.activeCurseBackward();
             } else if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
                 mCandidatesContainer.activeCurseForward();
-            } else if (keyCode == KeyEvent.KEYCODE_DPAD_UP) {
-                // If it has been the first page, a up key will shift
-                // the state to edit composing string.
-                if (!mCandidatesContainer.pageBackward(false, true)) {
-                    mCandidatesContainer.enableActiveHighlight(false);
-                    changeToStateComposing(true);
-                    updateComposingText(true);
-                }
-            } else if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
+            } else if (keyCode == KeyEvent.KEYCODE_DPAD_UP
+                       || keyCode == KeyEvent.KEYCODE_MINUS) {
+                mCandidatesContainer.pageBackward(false, true);
+            } else if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN
+                       || keyCode == KeyEvent.KEYCODE_EQUALS) {
                 mCandidatesContainer.pageForward(false, true);
             }
             return true;
@@ -826,6 +824,7 @@ public class PinyinIME extends InputMethodService {
             mComposingView.setVisibility(View.INVISIBLE);
             mComposingView.invalidate();
         }
+        dismissCandidateWindow();
     }
 
     private void updateComposingText(boolean visible) {
@@ -889,7 +888,6 @@ public class PinyinIME extends InputMethodService {
             // choiceId >= 0 means user finishes a choice selection.
             if (candId >= 0 && mDecInfo.canDoPrediction()) {
                 commitResultText(resultStr);
-                mImeState = ImeState.STATE_PREDICT;
                 if (null != mSkbContainer && mSkbContainer.isShown()) {
                     mSkbContainer.toggleCandidateMode(false);
                 }
@@ -906,9 +904,7 @@ public class PinyinIME extends InputMethodService {
                     mDecInfo.resetCandidates();
                 }
 
-                if (mDecInfo.mCandidatesList.size() > 0) {
-                    showCandidateWindow(false);
-                } else {
+                if (mDecInfo.mCandidatesList.size() <= 0) {
                     resetToIdleState(false);
                 }
             } else {
@@ -1118,9 +1114,7 @@ public class PinyinIME extends InputMethodService {
 
         mDecInfo.resetCandidates();
 
-        if (null != mCandidatesContainer && mCandidatesContainer.isShown()) {
-            showCandidateWindow(false);
-        }
+        dismissCandidateWindow();
     }
 
     private void updateIcon(int iconId) {
