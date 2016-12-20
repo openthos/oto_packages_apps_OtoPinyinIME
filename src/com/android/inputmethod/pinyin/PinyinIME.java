@@ -312,6 +312,16 @@ public class PinyinIME extends InputMethodService {
             keyChar = ' ';
         } else if (keyCode == KeyEvent.KEYCODE_APOSTROPHE) {
             keyChar = '\'';
+        } else if (keyCode == KeyEvent.KEYCODE_SLASH) {
+            keyChar = '/';
+        } else if (keyCode == KeyEvent.KEYCODE_SEMICOLON) {
+            keyChar = ';';
+        } else if (keyCode == KeyEvent.KEYCODE_BACKSLASH) {
+            keyChar = '\\';
+        } else if (keyCode == KeyEvent.KEYCODE_LEFT_BRACKET) {
+            keyChar = '[';
+        } else if (keyCode == KeyEvent.KEYCODE_RIGHT_BRACKET) {
+            keyChar = ']';
         }
 
         if (mInputModeSwitcher.isEnglishWithSkb()) {
@@ -477,14 +487,7 @@ public class PinyinIME extends InputMethodService {
             }
         } else if (keyChar != 0 && keyChar != '\t') {
             if (realAction) {
-                if (keyChar == ',' || keyChar == '.') {
-                    inputCommaPeriod("", keyChar, false, ImeState.STATE_IDLE);
-                } else {
-                    if (0 != keyChar) {
-                        String result = KeyMapDream.getSpecialChineseChar(keyCode, keyChar, event);
-                        commitResultText(result);
-                    }
-                }
+                commitResultText(KeyMapDream.getSpecialChineseChar(keyCode, keyChar, event));
             }
             return true;
         }
@@ -514,16 +517,18 @@ public class PinyinIME extends InputMethodService {
             }
         }
 
-        if (keyChar >= 'a' && keyChar <= 'z' || keyChar == '\''
+        if (keyChar >= 'a' && keyChar <= 'z'
                 && !mDecInfo.charBeforeCursorIsSeparator()
                 || keyCode == KeyEvent.KEYCODE_DEL) {
             if (!realAction) return true;
             return processSurfaceChange(keyChar, keyCode);
-        } else if (keyChar == ',' || keyChar == '.') {
+        } else if (keyChar == ',' || keyChar == '.' || keyChar == '/'
+                   || keyChar == ';' || keyChar == '\'' || keyChar == '['
+                   || keyChar == ']' || keyChar == '\\') {
             if (!realAction) return true;
-            inputCommaPeriod(mDecInfo.getCurrentFullSent(mCandidatesContainer
-                    .getActiveCandiatePos()), keyChar, true,
-                    ImeState.STATE_IDLE);
+            commitResultText(KeyMapDream.getSpecialChineseChar(keyCode, keyChar, event));
+            resetCandidateWindow();
+            mImeState = ImeState.STATE_IDLE;
             return true;
         } else if (keyCode == KeyEvent.KEYCODE_DPAD_UP
                 || keyCode == KeyEvent.KEYCODE_DPAD_DOWN

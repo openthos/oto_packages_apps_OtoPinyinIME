@@ -38,6 +38,23 @@ public class KeyMapDream {
     private static final String KEYCHAR_RIGHT_PAREN = "）";
     private static final String KEYCHAR_UNDERLINE = "＿";
     private static final String KEYCHAR_ADD = "＋";
+    private static final String KEYCHAR_COMMA = "，";
+    private static final String KEYCHAR_PERIOD = "。";
+    private static final String KEYCHAR_SLASH = "／";
+    private static final String KEYCHAR_SEMICOLON = "；";
+    private static final String KEYCHAR_APOSTROPHE = "‘";
+    private static final String KEYCHAR_LEFT_BRACKET = "[";
+    private static final String KEYCHAR_RIGHT_BRACKET = "]";
+    private static final String KEYCHAR_BACKSLASH = "、";
+    private static final String KEYCHAR_SHIFT_COMMA = "《";
+    private static final String KEYCHAR_SHIFT_PERIOD = "》";
+    private static final String KEYCHAR_SHIFT_SLASH = "？";
+    private static final String KEYCHAR_SHIFT_SEMICOLON = "：";
+    private static final String KEYCHAR_SHIFT_APOSTROPHE = "“";
+    private static final String KEYCHAR_SHIFT_LEFT_BRACKET = "｛";
+    private static final String KEYCHAR_SHIFT_RIGHT_BRACKET = "｝";
+    private static final String KEYCHAR_SHIFT_BACKSLASH = "｜";
+
 
     private static final int[] mKeyMap = {
             KeyEvent.KEYCODE_UNKNOWN,
@@ -146,11 +163,45 @@ public class KeyMapDream {
                 return KEYCHAR_UNDERLINE;
             } else if (keyCode == KeyEvent.KEYCODE_EQUALS) {
                 return KEYCHAR_ADD;
-            } else {
+            } else if (keyChar == ',') {
+                return KEYCHAR_SHIFT_COMMA;
+            } else if (keyChar == '.') {
+                return KEYCHAR_SHIFT_PERIOD;
+            } else if (keyChar == '/') {
+                return KEYCHAR_SHIFT_SLASH;
+            } else if (keyChar == ';') {
+                return KEYCHAR_SHIFT_SEMICOLON;
+            } else if (keyChar == '\'') {
+                return KEYCHAR_SHIFT_APOSTROPHE;
+            } else if (keyChar == '[') {
+                return KEYCHAR_SHIFT_LEFT_BRACKET;
+            } else if (keyChar == ']') {
+                return KEYCHAR_SHIFT_RIGHT_BRACKET;
+            } else if (keyChar == '\\') {
+                return KEYCHAR_SHIFT_BACKSLASH;
+            }  else {
                 return String.valueOf((char) keyChar);
             }
         } else {
-            return String.valueOf((char) keyChar);
+            if (keyChar == ',') {
+                return KEYCHAR_COMMA;
+            } else if (keyChar == '.') {
+                return KEYCHAR_PERIOD;
+            } else if (keyChar == '/') {
+                return KEYCHAR_SLASH;
+            } else if (keyChar == ';') {
+                return KEYCHAR_SEMICOLON;
+            } else if (keyChar == '\'') {
+                return KEYCHAR_APOSTROPHE;
+            } else if (keyChar == '[') {
+                return KEYCHAR_LEFT_BRACKET;
+            } else if (keyChar == ']') {
+                return KEYCHAR_RIGHT_BRACKET;
+            } else if (keyChar == '\\') {
+                return KEYCHAR_BACKSLASH;
+            } else {
+                return String.valueOf((char) keyChar);
+            }
         }
     }
 }
