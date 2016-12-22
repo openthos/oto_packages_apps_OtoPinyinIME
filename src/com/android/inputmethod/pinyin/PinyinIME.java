@@ -167,6 +167,9 @@ public class PinyinIME extends InputMethodService {
 
     private boolean mHomeKeyPress;
     private boolean mShiftKeyPress;
+    private boolean mLetterKeyPress = true;
+    private long mCtrlUpTime;
+    private static final long INTERVAL_TIME = 500;
 
     // receive ringer mode changes
     private BroadcastReceiver mReceiver = new BroadcastReceiver() {
@@ -266,6 +269,16 @@ public class PinyinIME extends InputMethodService {
             }
         } else {
             mShiftKeyPress = false;
+        }
+
+        if ((KeyEvent.KEYCODE_CTRL_LEFT == keyCode || KeyEvent.KEYCODE_CTRL_RIGHT == keyCode)
+             && event.getAction() == KeyEvent.ACTION_UP) {
+            mCtrlUpTime = System.currentTimeMillis();
+        }
+
+        if (keyCode >= KeyEvent.KEYCODE_A && keyCode <= KeyEvent.KEYCODE_Z
+            && event.getAction() == KeyEvent.ACTION_UP) {
+            mLetterKeyPress = System.currentTimeMillis() - mCtrlUpTime >= INTERVAL_TIME;
         }
 
         // SHIFT-SPACE is used to switch between Chinese and English
@@ -449,7 +462,7 @@ public class PinyinIME extends InputMethodService {
             boolean realAction) {
         // In this status, when user presses keys in [a..z], the status will
         // change to input state.
-        if (keyChar >= 'a' && keyChar <= 'z' && !event.isAltPressed()) {
+        if (keyChar >= 'a' && keyChar <= 'z' && !event.isAltPressed() && mLetterKeyPress) {
             if (!realAction) return true;
             mDecInfo.addSplChar((char) keyChar, true);
             chooseAndUpdate(-1);
@@ -485,7 +498,7 @@ public class PinyinIME extends InputMethodService {
                     return true;
                 }
             }
-        } else if (keyChar != 0 && keyChar != '\t') {
+        } else if (keyChar != 0 && keyChar != '\t' && mLetterKeyPress) {
             if (realAction) {
                 commitResultText(KeyMapDream.getSpecialChineseChar(keyCode, keyChar, event));
             }
