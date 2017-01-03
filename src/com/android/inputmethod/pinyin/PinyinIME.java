@@ -167,9 +167,9 @@ public class PinyinIME extends InputMethodService {
 
     private boolean mHomeKeyPress;
     private boolean mShiftKeyPress;
-    private boolean mLetterKeyPress = true;
+    private boolean mLetterKeyPress;
     private long mCtrlUpTime;
-    private static final long INTERVAL_TIME = 500;
+    private static final long INTERVAL_TIME = 450;
 
     // receive ringer mode changes
     private BroadcastReceiver mReceiver = new BroadcastReceiver() {
@@ -252,6 +252,7 @@ public class PinyinIME extends InputMethodService {
     }
 
     private boolean processKey(KeyEvent event, boolean realAction) {
+        mLetterKeyPress = true;
         if (ImeState.STATE_BYPASS == mImeState) return false;
 
         int keyCode = event.getKeyCode();
