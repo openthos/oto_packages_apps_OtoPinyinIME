@@ -27,7 +27,7 @@ public class KeyMapDream {
     private static final int SHIFT_FWCH = 8;
     private  static final String KEYCHAR_GRAVE = "～";
     private static final String KEYCHAR_EXCLAMATION_POINT = "！";
-    private static final String KEYCHAR_AT = "＠";
+    private static final String KEYCHAR_AT = "@";
     private static final String KEYCHAR_POUND = "＃";
     private static final String KEYCHAR_DOLLAR = "￥";
     private static final String KEYCHAR_PERCENT = "％";
