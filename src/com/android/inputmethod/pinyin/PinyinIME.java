@@ -285,7 +285,7 @@ public class PinyinIME extends InputMethodService {
         // SHIFT-SPACE is used to switch between Chinese and English
         // when HKB is on.
         if (switchLanguage) {
-            if (!realAction) return true;
+            if (!realAction) return false;
 
             updateIcon(mInputModeSwitcher.switchLanguageWithHkb());
             resetToIdleState(false);
@@ -295,7 +295,7 @@ public class PinyinIME extends InputMethodService {
                     | KeyEvent.META_SHIFT_LEFT_ON
                     | KeyEvent.META_SHIFT_RIGHT_ON | KeyEvent.META_SYM_ON;
             getCurrentInputConnection().clearMetaKeyStates(allMetaState);
-            return true;
+            return false;
         }
 
         // If HKB is on to input English, by-pass the key event so that
@@ -481,9 +481,7 @@ public class PinyinIME extends InputMethodService {
             sendKeyChar('\n');
             return true;
         } else if (keyCode == KeyEvent.KEYCODE_ALT_LEFT
-                || keyCode == KeyEvent.KEYCODE_ALT_RIGHT
-                || keyCode == KeyEvent.KEYCODE_SHIFT_LEFT
-                || keyCode == KeyEvent.KEYCODE_SHIFT_RIGHT) {
+                || keyCode == KeyEvent.KEYCODE_ALT_RIGHT) {
             return true;
         } else if (event.isAltPressed()) {
             char fullwidth_char = KeyMapDream.getChineseLabel(keyCode);
