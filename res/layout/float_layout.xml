@@ -1,0 +1,11 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/line1"
+    android:layout_width="50dp"
+    android:layout_height="50dp" >
+
+    <Button
+        android:id="@+id/float_id"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/app_icon" />
+    </LinearLayout>

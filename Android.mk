@@ -13,7 +13,8 @@ LOCAL_JNI_SHARED_LIBRARIES := libjni_pinyinime
 
 LOCAL_STATIC_JAVA_LIBRARIES := com.android.inputmethod.pinyin.lib
 
-LOCAL_CERTIFICATE := shared
+# LOCAL_CERTIFICATE := shared
+LOCAL_CERTIFICATE := platform
 
 LOCAL_PROGUARD_FLAG_FILES := proguard.cfg
 
