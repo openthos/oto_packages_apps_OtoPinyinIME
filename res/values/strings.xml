@@ -58,7 +58,4 @@
     <string name="setting_others">其它设置</string>
     <string name="setting_others_summary">词典同步等</string>
 
-    <string name="keyboard_enable">Enable</string>
-    <string name="keyboard_disable">Disable</string>
-    <string name="save">Save</string>
 </resources>

@@ -1,5 +1,0 @@
-<resources xmlns:xliff="http://schemas.android.com/tools">
-    <string name="keyboard_enable">启用键盘映射</string>
-    <string name="keyboard_disable">禁用键盘映射</string>
-    <string name="save">保存</string>
-</resources>

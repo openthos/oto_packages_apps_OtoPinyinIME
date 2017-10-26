@@ -46,17 +46,10 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
-import android.app.Dialog;
-import android.widget.Button;
-import android.os.SystemClock;
-import android.app.Instrumentation;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Main class of the Pinyin input method.
@@ -178,16 +171,6 @@ public class PinyinIME extends InputMethodService {
     private long mCtrlUpTime;
     private static final long INTERVAL_TIME = 450;
 
-    private Map<String, Integer[]> mMapInfos = new HashMap<>();;
-    private LinearLayout mFloatLayout;
-    private WindowManager.LayoutParams mParams;
-    private WindowManager mWindowManager;
-    private Button mFloatView;
-    private KeyboardMapDialog mDialog;
-    private boolean mDialogShow;
-    private Set<String> mKeySets;
-    private boolean mIsKeyboardMap = false;
-
     // receive ringer mode changes
     private BroadcastReceiver mReceiver = new BroadcastReceiver() {
         @Override
@@ -219,69 +202,6 @@ public class PinyinIME extends InputMethodService {
 
         mEnvironment.onConfigurationChanged(getResources().getConfiguration(),
                 this);
-        createFloatView();
-    }
-
-    private void createFloatView() {
-        mWindowManager = (WindowManager) getApplication().
-                getSystemService(getApplication().WINDOW_SERVICE);
-        mDialog = new KeyboardMapDialog(this, mWindowManager);
-        mParams = new WindowManager.LayoutParams();
-        mParams.type = WindowManager.LayoutParams.TYPE_PHONE;
-        mParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
-        mParams.gravity = Gravity.LEFT | Gravity.TOP;
-        mParams.x = mWindowManager.getDefaultDisplay().getWidth();
-        mParams.y = mWindowManager.getDefaultDisplay().getHeight() / 2;
-        mParams.width = 50;
-        mParams.height = 50;
-        mFloatLayout = (LinearLayout) LayoutInflater.
-                from(getApplication()).inflate(R.layout.float_layout, null);
-        mFloatView = (Button) mFloatLayout.findViewById(R.id.float_id);
-        mWindowManager.addView(mFloatLayout, mParams);
-
-        //mFloatLayout.measure(View.MeasureSpec.makeMeasureSpec(0,
-        //        View.MeasureSpec.UNSPECIFIED), View.MeasureSpec
-        //        .makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
-        FloatViewClickListener clickListener = new FloatViewClickListener();
-        FloatViewTouchListener touchListener = new FloatViewTouchListener();
-        mFloatView.setOnClickListener(clickListener);
-        mFloatView.setOnTouchListener(touchListener);
-    }
-
-    private class FloatViewClickListener implements View.OnClickListener {
-
-        @Override
-        public void onClick(View v) {
-            if (mDialogShow) {
-                mDialog.dismiss();
-                mDialogShow = false;
-            } else {
-                mDialog.showDialog();
-                mDialogShow = true;
-            }
-        }
-    }
-
-    private class FloatViewTouchListener implements View.OnTouchListener {
-
-        @Override
-        public boolean onTouch(View v, MotionEvent event) {
-            if (event.getAction() == MotionEvent.ACTION_UP) {
-                if (event.getRawY() <
-                        (mWindowManager.getDefaultDisplay().getWidth() - event.getRawX())) {
-                    mParams.x = (int) (event.getRawX() - mFloatView.getMeasuredWidth() / 2);
-                    mParams.y = 0;
-                } else {
-                    mParams.x = mWindowManager.getDefaultDisplay().getWidth();
-                    mParams.y = (int) (event.getRawY() - mFloatView.getMeasuredHeight() / 2);
-                }
-            } else {
-                mParams.x = (int) (event.getRawX() - mFloatView.getMeasuredWidth() / 2);
-                mParams.y = (int) (event.getRawY() - mFloatView.getMeasuredHeight() / 2);
-            }
-            mWindowManager.updateViewLayout(mFloatLayout, mParams);
-            return false;
-        }
     }
 
     @Override
@@ -292,9 +212,6 @@ public class PinyinIME extends InputMethodService {
         unbindService(mPinyinDecoderServiceConnection);
         Settings.releaseInstance();
         super.onDestroy();
-        if (mFloatLayout != null) {
-            mWindowManager.removeView(mFloatLayout);
-        }
     }
 
     @Override
@@ -322,39 +239,8 @@ public class PinyinIME extends InputMethodService {
         resetToIdleState(false);
     }
 
-    public void mappingMotionEvent(final float x, final float y, final KeyEvent event) {
-              final  Instrumentation in = new Instrumentation();
-        new Thread() {
-
-            @Override
-            public void run() {
-                super.run();
-                Long downTime = SystemClock.uptimeMillis();
-                if (event.getAction() == KeyEvent.ACTION_DOWN) {
-                    if (event.getRepeatCount() == 0) {
-                        MotionEvent down = MotionEvent.obtain(
-                            downTime, downTime, MotionEvent.ACTION_DOWN, x, y, 0);
-                        in.sendPointerSync(down);
-                    }
-                } else if (event.getAction() == KeyEvent.ACTION_UP) {
-                    MotionEvent up = MotionEvent.obtain(downTime + 1000,
-                        downTime +1000, MotionEvent.ACTION_UP, x, y, 0);
-                    in.sendPointerSync(up);
-                }
-            }
-        }.start();
-    }
-
-    public void setIsKeyboardMap(boolean isKeyboardMap) {
-        mIsKeyboardMap = isKeyboardMap;
-    }
-
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (keyCode == KeyEvent.KEYCODE_X && event.isAltPressed()
-                && (event.getRepeatCount() == 0)) {
-            mIsKeyboardMap = !mIsKeyboardMap;
-        }
         if (processKey(event, 0 != event.getRepeatCount())) return true;
         return super.onKeyDown(keyCode, event);
     }
@@ -365,131 +251,116 @@ public class PinyinIME extends InputMethodService {
         return super.onKeyUp(keyCode, event);
     }
 
-
     private boolean processKey(KeyEvent event, boolean realAction) {
+        mLetterKeyPress = true;
+        if (ImeState.STATE_BYPASS == mImeState) return false;
+
         int keyCode = event.getKeyCode();
-        if (mDialog.isEnable() && mIsKeyboardMap) {
-            if (event.getRepeatCount() == 0) {
-                String key = String.valueOf((char)event.getUnicodeChar()).toUpperCase();
-                for (KeyboardMapDialog.DragView dragView : mDialog.mDragViewList) {
-                    mMapInfos.put(dragView.key, new Integer[] {dragView.mMotionX + 45,
-                                                               dragView.mMotionY + 45});
+        boolean switchLanguage = false;
+
+        if (KeyEvent.KEYCODE_SHIFT_LEFT == keyCode || KeyEvent.KEYCODE_SHIFT_RIGHT == keyCode) {
+            if (event.getAction() == KeyEvent.ACTION_DOWN) {
+                if (event.getRepeatCount() == 0) {
+                    mShiftKeyPress = true;
                 }
-                mKeySets = mMapInfos.keySet();
-                if (mKeySets.contains(key)) {
-                    mappingMotionEvent(mMapInfos.get(key)[0], mMapInfos.get(key)[1], event);
+            } else {
+                if (mShiftKeyPress) {
+                    switchLanguage = true;
                 }
             }
-            return true;
         } else {
-            mLetterKeyPress = true;
-            if (ImeState.STATE_BYPASS == mImeState) return false;
+            mShiftKeyPress = false;
+        }
 
-            boolean switchLanguage = false;
+        if ((KeyEvent.KEYCODE_CTRL_LEFT == keyCode || KeyEvent.KEYCODE_CTRL_RIGHT == keyCode)
+             && event.getAction() == KeyEvent.ACTION_UP) {
+            mCtrlUpTime = System.currentTimeMillis();
+        }
 
-            if (KeyEvent.KEYCODE_SHIFT_LEFT == keyCode || KeyEvent.KEYCODE_SHIFT_RIGHT == keyCode) {
-                if (event.getAction() == KeyEvent.ACTION_DOWN) {
-                    if (event.getRepeatCount() == 0) {
-                        mShiftKeyPress = true;
-                    }
-                } else {
-                    if (mShiftKeyPress) {
-                        switchLanguage = true;
-                    }
-                }
-            } else {
-                mShiftKeyPress = false;
-            }
+        if (keyCode >= KeyEvent.KEYCODE_A && keyCode <= KeyEvent.KEYCODE_Z
+            && event.getAction() == KeyEvent.ACTION_UP) {
+            mLetterKeyPress = System.currentTimeMillis() - mCtrlUpTime >= INTERVAL_TIME;
+        }
 
-            if ((KeyEvent.KEYCODE_CTRL_LEFT == keyCode || KeyEvent.KEYCODE_CTRL_RIGHT == keyCode)
-                 && event.getAction() == KeyEvent.ACTION_UP) {
-                mCtrlUpTime = System.currentTimeMillis();
-            }
+        // SHIFT-SPACE is used to switch between Chinese and English
+        // when HKB is on.
+        if (switchLanguage) {
+            if (!realAction) return false;
 
-            if (keyCode >= KeyEvent.KEYCODE_A && keyCode <= KeyEvent.KEYCODE_Z
-                && event.getAction() == KeyEvent.ACTION_UP) {
-                mLetterKeyPress = System.currentTimeMillis() - mCtrlUpTime >= INTERVAL_TIME;
-            }
+            updateIcon(mInputModeSwitcher.switchLanguageWithHkb());
+            resetToIdleState(false);
 
-            // SHIFT-SPACE is used to switch between Chinese and English
-            // when HKB is on.
-            if (switchLanguage) {
-                if (!realAction) return false;
-
-                updateIcon(mInputModeSwitcher.switchLanguageWithHkb());
-                resetToIdleState(false);
-
-                int allMetaState = KeyEvent.META_ALT_ON | KeyEvent.META_ALT_LEFT_ON
-                        | KeyEvent.META_ALT_RIGHT_ON | KeyEvent.META_SHIFT_ON
-                        | KeyEvent.META_SHIFT_LEFT_ON
-                        | KeyEvent.META_SHIFT_RIGHT_ON | KeyEvent.META_SYM_ON;
-                getCurrentInputConnection().clearMetaKeyStates(allMetaState);
-                return false;
-            }
-
-            // If HKB is on to input English, by-pass the key event so that
-            // default key listener will handle it.
-            if (mInputModeSwitcher.isEnglishWithHkb()) {
-                return false;
-            }
-
-            if (isSystemKeys(event)) {
-                return false;
-            }
-
-            if (processFunctionKeys(keyCode, realAction)) {
-                return true;
-            }
-
-            int keyChar = 0;
-            if (keyCode >= KeyEvent.KEYCODE_A && keyCode <= KeyEvent.KEYCODE_Z) {
-                keyChar = keyCode - KeyEvent.KEYCODE_A + 'a';
-            } else if (keyCode >= KeyEvent.KEYCODE_0
-                    && keyCode <= KeyEvent.KEYCODE_9) {
-                keyChar = keyCode - KeyEvent.KEYCODE_0 + '0';
-            } else if (keyCode == KeyEvent.KEYCODE_COMMA) {
-                keyChar = ',';
-            } else if (keyCode == KeyEvent.KEYCODE_PERIOD) {
-                keyChar = '.';
-            } else if (keyCode == KeyEvent.KEYCODE_SPACE) {
-                keyChar = ' ';
-            } else if (keyCode == KeyEvent.KEYCODE_APOSTROPHE) {
-                keyChar = '\'';
-            } else if (keyCode == KeyEvent.KEYCODE_SLASH) {
-                keyChar = '/';
-            } else if (keyCode == KeyEvent.KEYCODE_SEMICOLON) {
-                keyChar = ';';
-            } else if (keyCode == KeyEvent.KEYCODE_BACKSLASH) {
-                keyChar = '\\';
-            } else if (keyCode == KeyEvent.KEYCODE_LEFT_BRACKET) {
-                keyChar = '[';
-            } else if (keyCode == KeyEvent.KEYCODE_RIGHT_BRACKET) {
-                keyChar = ']';
-            }
-
-            if (mInputModeSwitcher.isEnglishWithSkb()) {
-                return mImEn.processKey(getCurrentInputConnection(), event,
-                        mInputModeSwitcher.isEnglishUpperCaseWithSkb(), realAction);
-            } else if (mInputModeSwitcher.isChineseText()) {
-                if (mImeState == ImeState.STATE_IDLE ||
-                        mImeState == ImeState.STATE_APP_COMPLETION) {
-                    mImeState = ImeState.STATE_IDLE;
-                    return processStateIdle(keyChar, keyCode, event, realAction);
-                } else if (mImeState == ImeState.STATE_INPUT) {
-                    return processStateInput(keyChar, keyCode, event, realAction);
-                } else if (mImeState == ImeState.STATE_PREDICT) {
-                    return processStatePredict(keyChar, keyCode, event, realAction);
-                } else if (mImeState == ImeState.STATE_COMPOSING) {
-                    return processStateEditComposing(keyChar, keyCode, event,
-                            realAction);
-                }
-            } else {
-                if (0 != keyChar && realAction) {
-                    commitResultText(String.valueOf((char) keyChar));
-                }
-            }
+            int allMetaState = KeyEvent.META_ALT_ON | KeyEvent.META_ALT_LEFT_ON
+                    | KeyEvent.META_ALT_RIGHT_ON | KeyEvent.META_SHIFT_ON
+                    | KeyEvent.META_SHIFT_LEFT_ON
+                    | KeyEvent.META_SHIFT_RIGHT_ON | KeyEvent.META_SYM_ON;
+            getCurrentInputConnection().clearMetaKeyStates(allMetaState);
             return false;
         }
+
+        // If HKB is on to input English, by-pass the key event so that
+        // default key listener will handle it.
+        if (mInputModeSwitcher.isEnglishWithHkb()) {
+            return false;
+        }
+
+        if (isSystemKeys(event)) {
+            return false;
+        }
+
+        if (processFunctionKeys(keyCode, realAction)) {
+            return true;
+        }
+
+        int keyChar = 0;
+        if (keyCode >= KeyEvent.KEYCODE_A && keyCode <= KeyEvent.KEYCODE_Z) {
+            keyChar = keyCode - KeyEvent.KEYCODE_A + 'a';
+        } else if (keyCode >= KeyEvent.KEYCODE_0
+                && keyCode <= KeyEvent.KEYCODE_9) {
+            keyChar = keyCode - KeyEvent.KEYCODE_0 + '0';
+        } else if (keyCode == KeyEvent.KEYCODE_COMMA) {
+            keyChar = ',';
+        } else if (keyCode == KeyEvent.KEYCODE_PERIOD) {
+            keyChar = '.';
+        } else if (keyCode == KeyEvent.KEYCODE_SPACE) {
+            keyChar = ' ';
+        } else if (keyCode == KeyEvent.KEYCODE_APOSTROPHE) {
+            keyChar = '\'';
+        } else if (keyCode == KeyEvent.KEYCODE_SLASH) {
+            keyChar = '/';
+        } else if (keyCode == KeyEvent.KEYCODE_SEMICOLON) {
+            keyChar = ';';
+        } else if (keyCode == KeyEvent.KEYCODE_BACKSLASH) {
+            keyChar = '\\';
+        } else if (keyCode == KeyEvent.KEYCODE_LEFT_BRACKET) {
+            keyChar = '[';
+        } else if (keyCode == KeyEvent.KEYCODE_RIGHT_BRACKET) {
+            keyChar = ']';
+        }
+
+        if (mInputModeSwitcher.isEnglishWithSkb()) {
+            return mImEn.processKey(getCurrentInputConnection(), event,
+                    mInputModeSwitcher.isEnglishUpperCaseWithSkb(), realAction);
+        } else if (mInputModeSwitcher.isChineseText()) {
+            if (mImeState == ImeState.STATE_IDLE ||
+                    mImeState == ImeState.STATE_APP_COMPLETION) {
+                mImeState = ImeState.STATE_IDLE;
+                return processStateIdle(keyChar, keyCode, event, realAction);
+            } else if (mImeState == ImeState.STATE_INPUT) {
+                return processStateInput(keyChar, keyCode, event, realAction);
+            } else if (mImeState == ImeState.STATE_PREDICT) {
+                return processStatePredict(keyChar, keyCode, event, realAction);
+            } else if (mImeState == ImeState.STATE_COMPOSING) {
+                return processStateEditComposing(keyChar, keyCode, event,
+                        realAction);
+            }
+        } else {
+            if (0 != keyChar && realAction) {
+                commitResultText(String.valueOf((char) keyChar));
+            }
+        }
+
+        return false;
     }
 
     private boolean isSystemKeys(KeyEvent event) {
@@ -965,9 +836,7 @@ public class PinyinIME extends InputMethodService {
 
     private void commitResultText(String resultText) {
         InputConnection ic = getCurrentInputConnection();
-        if (null != ic) {
-            ic.commitText(resultText, 1);
-        }
+        if (null != ic) ic.commitText(resultText, 1);
         if (null != mComposingView) {
             mComposingView.setVisibility(View.INVISIBLE);
             mComposingView.invalidate();
