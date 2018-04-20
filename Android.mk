@@ -11,7 +11,7 @@ LOCAL_PACKAGE_NAME := OtoPinyinIME
 
 LOCAL_JNI_SHARED_LIBRARIES := libjni_pinyinime
 
-LOCAL_STATIC_JAVA_LIBRARIES := com.android.inputmethod.pinyin.lib
+LOCAL_STATIC_JAVA_LIBRARIES := org.openthos.inputmethod.pinyin.lib
 
 LOCAL_CERTIFICATE := shared
 
